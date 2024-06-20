@@ -13,7 +13,7 @@ customtkinter.set_default_color_theme("blue")
 def download():
     try:
         yt_link = link.get()
-        ytObject = YouTube(yt_link)
+        ytObject = YouTube(yt_link, on_progress_callback=on_progress)
         video = ytObject.streams.get_highest_resolution()
 
         title.configure(text=ytObject.title, text_color="white")
@@ -26,6 +26,24 @@ def download():
         finished_label.configure(text=f"Error : {e}", text_color='red')
         exit()
     finished_label.configure(text="Video Downloaded Successfully!", text_color="green")
+    reset.pack(pady=5)
+
+def on_progress(stream, chunk, bytes_remaining):
+    total_size = stream.filesize
+    bytes_downloaded = total_size - bytes_remaining
+    percentage_completetion = bytes_downloaded / total_size * 100
+    per = str(int(percentage_completetion))
+    pPercentage.configure(text=f"{per}%")
+    pPercentage.update()
+    # print(per)
+    # Updating Percentage Bar
+    progressBar.set(float(percentage_completetion)/100)
+
+def reset():
+    progressBar.set(0)
+    finished_label.configure(text="")
+    pPercentage.configure(text="0%")
+    link.configure(textvariable="")
 
 # setting up the frame
 app = customtkinter.CTk()
@@ -45,11 +63,21 @@ link.pack()
 finished_label = customtkinter.CTkLabel(app, text="")
 finished_label.pack(padx=10, pady=10)
 
+# Progress Percentage
+pPercentage = customtkinter.CTkLabel(app, text="0%")
+pPercentage.pack()
+
+progressBar = customtkinter.CTkProgressBar(app, height=5, width=400)
+progressBar.set(0)
+progressBar.pack(padx=10, pady=10)
+
 
 # Download Button
 download = customtkinter.CTkButton(app, text="Download Video", command=download)
 download.pack(pady=10)
 
+# reset Button
+reset = customtkinter.CTkButton(app, text="Reset", command=reset)
 
 # Run App Loop
 app.mainloop()
